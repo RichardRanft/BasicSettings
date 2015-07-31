@@ -133,12 +133,12 @@ std::list<std::string> CSettings::splitLine(std::string line, char* delim)
 
 bool CSettings::SaveSettings()
 {
-	return true;
+	return false;
 }
 
 bool CSettings::Set(std::string sectionName, std::string key, std::string value)
 {
-	return true;
+	return false;
 }
 
 void CSettings::readFile()
