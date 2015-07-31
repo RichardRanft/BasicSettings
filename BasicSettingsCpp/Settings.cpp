@@ -133,11 +133,52 @@ std::list<std::string> CSettings::splitLine(std::string line, char* delim)
 
 bool CSettings::SaveSettings()
 {
+	std::ofstream file(m_fileName);
+	try
+	{
+		std::map<std::string, std::list<std::pair<std::string, std::string>>>::iterator itr = m_attributeList.begin();
+		std::map<std::string, std::list<std::pair<std::string, std::string>>>::iterator end = m_attributeList.end();
+		for (; itr != end; itr++)
+		{
+			std::string def = (*itr).first.c_str();
+			std::cout << def << std::endl;
+			std::list<std::pair<std::string, std::string>> section = GetSection(def);
+			for (std::list<std::pair<std::string, std::string>>::const_iterator it = section.begin(); it != section.end(); it++)
+			{
+				file << (*it).first << "=" << (*it).second << std::endl;
+			}
+		}
+		file.close();
+		return true;
+	}
+	catch (std::exception e)
+	{
+		std::cout << "CSettings::SaveSettings() failed - " << e.what() << std::endl;
+	}
 	return false;
 }
 
 bool CSettings::Set(std::string sectionName, std::string key, std::string value)
 {
+	std::list<std::pair<std::string, std::string>> section = GetSection(sectionName);
+	std::list<std::pair<std::string, std::string>>::const_iterator it = section.begin();
+	bool found = false;
+	for (; it != section.end(); it++)
+	{
+		if ((*it).first.compare(key) == 0)
+		{
+			found = true;
+		}
+		if (found)
+			break;
+	}
+	if (found)
+	{
+		std::pair<std::string, std::string> newpair(key, value);
+		section.erase(it);
+		section.push_back(newpair);
+		return true;
+	}
 	return false;
 }
 
