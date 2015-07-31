@@ -113,7 +113,7 @@ bool CSettings::LoadSettings()
 	}
 	catch (std::exception ex)
 	{
-		//std::cout << "{0} : Exception : {1}", DateTime.Now.Tostd::string(), ex.Message);
+		std::cout << "Unable to parse settins: " << ex.what() << std::endl;
 		success = false;
 	}
 
