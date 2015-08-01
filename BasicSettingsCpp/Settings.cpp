@@ -172,10 +172,15 @@ bool CSettings::Set(std::string sectionName, std::string key, std::string value)
 		if (found)
 			break;
 	}
+	std::pair<std::string, std::string> newpair(key, value);
 	if (found)
 	{
-		std::pair<std::string, std::string> newpair(key, value);
 		(*section).erase(it);
+		(*section).push_back(newpair);
+		return true;
+	}
+	else
+	{
 		(*section).push_back(newpair);
 		return true;
 	}
