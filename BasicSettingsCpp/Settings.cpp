@@ -141,7 +141,7 @@ bool CSettings::SaveSettings()
 		for (; itr != end; itr++)
 		{
 			std::string def = (*itr).first.c_str();
-			std::cout << def << std::endl;
+			file << def << std::endl;
 			std::list<std::pair<std::string, std::string>> section = GetSection(def);
 			for (std::list<std::pair<std::string, std::string>>::const_iterator it = section.begin(); it != section.end(); it++)
 			{
@@ -160,10 +160,10 @@ bool CSettings::SaveSettings()
 
 bool CSettings::Set(std::string sectionName, std::string key, std::string value)
 {
-	std::list<std::pair<std::string, std::string>> section = GetSection(sectionName);
-	std::list<std::pair<std::string, std::string>>::const_iterator it = section.begin();
+	std::list<std::pair<std::string, std::string>> *section = &m_attributeList[sectionName];
+	std::list<std::pair<std::string, std::string>>::const_iterator it = (*section).begin();
 	bool found = false;
-	for (; it != section.end(); it++)
+	for (; it != (*section).end(); it++)
 	{
 		if ((*it).first.compare(key) == 0)
 		{
@@ -175,8 +175,8 @@ bool CSettings::Set(std::string sectionName, std::string key, std::string value)
 	if (found)
 	{
 		std::pair<std::string, std::string> newpair(key, value);
-		section.erase(it);
-		section.push_back(newpair);
+		(*section).erase(it);
+		(*section).push_back(newpair);
 		return true;
 	}
 	return false;

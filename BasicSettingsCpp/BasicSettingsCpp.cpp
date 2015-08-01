@@ -27,6 +27,9 @@ int _tmain(int argc, _TCHAR* argv[])
 			std::cout << (*it).first << " = " << (*it).second << std::endl;
 		}
 	}
+
+	settings->Set("[Default]", "TESTSTR", "\"re-changed line with ; in quotes\"");
+	settings->SaveSettings();
 	return 0;
 }
 
