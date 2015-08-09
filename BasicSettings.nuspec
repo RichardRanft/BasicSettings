@@ -2,12 +2,12 @@
 <package>
     <metadata>
         <id>BasicSettings</id>
-        <version>1.0.0.4</version>
+        <version>1.0.0.5</version>
         <title>BasicSettings</title>
         <authors>SRES</authors>
         <owners></owners>
         <description>A simple module for loading settings from .ini files</description>
-        <releaseNotes>1.0.0.4 Released 14 May 2015 - another fix to comments</releaseNotes>
+        <releaseNotes>1.0.0.5 Released 14 May 2015 - another fix to comments</releaseNotes>
         <summary></summary>
         <language>en-US</language>
         <projectUrl>http://egm-dev.ad.agi/svn/EGMTools/trunk/BasicSettings</projectUrl>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace BasicSettings
     public class CSettings
     {
         private List<String> m_iniText;
-        private List<KeyValuePair<String, List<KeyValuePair<String, String>>>> m_attributeList;
+        private Dictionary<String, StringDictionary> m_attributeList;
         private String m_fileName;
         private bool m_dirty;
 
@@ -39,7 +40,7 @@ namespace BasicSettings
             }
         }
 
-        public List<KeyValuePair<String, List<KeyValuePair<String, String>>>> Attributes
+        public Dictionary<String, StringDictionary> Attributes
         {
             get
             {
@@ -51,7 +52,7 @@ namespace BasicSettings
         {
             m_fileName = "settings.ini";
             m_iniText = new List<String>();
-            m_attributeList = new List<KeyValuePair<String, List<KeyValuePair<String, String>>>>();
+            m_attributeList = new Dictionary<String, StringDictionary>();
             m_dirty = false;
         }
 
@@ -59,17 +60,14 @@ namespace BasicSettings
         {
             m_fileName = fileName;
             m_iniText = new List<String>();
-            m_attributeList = new List<KeyValuePair<String, List<KeyValuePair<String, String>>>>();
+            m_attributeList = new Dictionary<String, StringDictionary>();
             m_dirty = false;
         }
 
-        public List<KeyValuePair<String, String>> GetSection(String sectionName)
+        public StringDictionary GetSection(String sectionName)
         {
-            foreach (KeyValuePair<String, List<KeyValuePair<String, String>>> section in m_attributeList)
-            {
-                if (section.Key == sectionName)
-                    return section.Value;
-            }
+            if (m_attributeList.ContainsKey(sectionName))
+                return m_attributeList[sectionName];
             return null;
         }
 
@@ -83,10 +81,9 @@ namespace BasicSettings
                     String line = "";
                     int index = 0;
 
-                    String section = "[Default]";
-                    List<KeyValuePair<String, String>> sectionValues = new List<KeyValuePair<String, String>>();
-                    KeyValuePair<String, List<KeyValuePair<String, String>>> sectionPair = new KeyValuePair<String, List<KeyValuePair<String, String>>>(section, sectionValues);
-                    m_attributeList.Add(sectionPair);
+                    String sectionName = "[Default]";
+                    StringDictionary section = new StringDictionary();
+                    m_attributeList.Add(sectionName, section);
 
                     while (!reader.EndOfStream)
                     {
@@ -117,22 +114,15 @@ namespace BasicSettings
                         {
                             bool sectionExists = false;
                             // check to see if this [Section] exists.  If so, add new entries to it
-                            foreach (KeyValuePair<String, List<KeyValuePair<String, String>>> sectionEntry in m_attributeList)
+                            if (m_attributeList.ContainsKey(line.ToString().Trim()))
                             {
-                                if (sectionEntry.Key.ToString() == line.ToString())
-                                {
-                                    sectionPair = sectionEntry;
-                                    sectionExists = true;
-                                    continue;
-                                }
-                            }
-                            if (sectionExists)
+                                sectionExists = true;
                                 continue;
+                            }
                             // otherwise, create a new [Section]
-                            section = line;
-                            sectionValues = new List<KeyValuePair<String, String>>();
-                            sectionPair = new KeyValuePair<String, List<KeyValuePair<String, String>>>(section, sectionValues);
-                            m_attributeList.Add(sectionPair);
+                            sectionName = line;
+                            section = new StringDictionary();
+                            m_attributeList.Add(sectionName, section);
                             continue;
                         }
 
@@ -142,20 +132,18 @@ namespace BasicSettings
                             Console.WriteLine("{0} : Invalid key/value pair in ini file: {1}", DateTime.Now.ToString(), line);
                             continue;
                         }
-                        String val = line.Remove(0, parts[0].Length + 1);
-                        KeyValuePair<String, String> attribute = new KeyValuePair<String, String>(parts[0].Trim(), val.Trim());
+                        String key = parts[0].Trim();
+                        String val = line.Remove(0, parts[0].Length + 1).Trim();
 
                         // check for existing attributes.  If we're trying to add the same attribute again we remove the
                         // old and add the new - so later definitions override earlier ones.
-                        foreach (KeyValuePair<String, String> attr in sectionPair.Value)
+                        if(section.ContainsKey(key))
                         {
-                            if (attr.Key.ToString().ToLower() == parts[0].ToLower())
-                            {
-                                sectionPair.Value.Remove(attr);
-                                break;
-                            }
+                            section.Remove(key);
+                            section.Add(key, val);
                         }
-                        sectionPair.Value.Add(attribute);
+                        else
+                            section.Add(key, val);
                     }
                 }
 
@@ -176,9 +164,9 @@ namespace BasicSettings
             {
                 using (StreamWriter writer = new StreamWriter(m_fileName))
                 {
-                    foreach (KeyValuePair<String, List<KeyValuePair<String, String>>> section in m_attributeList)
+                    foreach (String section in m_attributeList.Keys)
                     {
-                        String sectionTitle = section.Key;
+                        String sectionTitle = section;
                         try
                         {
                             writer.WriteLine(sectionTitle);
@@ -188,11 +176,11 @@ namespace BasicSettings
                             Console.WriteLine("{0} : Exception : {1}", DateTime.Now.ToString(), e.Message);
                             return false;
                         }
-                        foreach (KeyValuePair<String, String> attribute in section.Value)
+                        foreach (String attribute in m_attributeList[section])
                         {
                             try
                             {
-                                writer.WriteLine(attribute.Key.ToUpper() + "=" + attribute.Value.ToUpper());
+                                writer.WriteLine(m_attributeList[section][attribute].ToUpper() + "=" + m_attributeList[section][attribute]);
                             }
                             catch (Exception e)
                             {
@@ -212,34 +200,20 @@ namespace BasicSettings
             if (sectionName.Equals(""))
                 sectionName = "[Default]";
 
-            foreach (KeyValuePair<String, List<KeyValuePair<String, String>>> section in m_attributeList)
+            if(m_attributeList.ContainsKey(sectionName))
             {
-                if (sectionName.Equals(section.Key))
+                if (m_attributeList[sectionName].ContainsKey(key))
                 {
-                    KeyValuePair<String, String> attribute = new KeyValuePair<String, String>(key, value);
-
-                    // check for existing attributes.  If we're trying to add the same attribute again we remove the
-                    // old and add the new - so later definitions override earlier ones.
-                    foreach (KeyValuePair<String, String> attr in section.Value)
-                    {
-                        if (attr.Key.ToString().ToLower() == key.ToLower())
-                        {
-                            if (attr.Value.ToLower() != value.ToLower())
-                                m_dirty = true;
-                            section.Value.Remove(attr);
-                            break;
-                        }
-                    }
-                    section.Value.Add(attribute);
+                    m_attributeList[sectionName].Remove(key);
+                    m_attributeList[sectionName].Add(key, value);
                     m_dirty = true;
                 }
             }
             if (!m_dirty)
             {
-                KeyValuePair<String, List<KeyValuePair<String, String>>> newSection = new KeyValuePair<String, List<KeyValuePair<String, String>>>(sectionName, new List<KeyValuePair<string, string>>());
-                KeyValuePair<String, String> newAttribute = new KeyValuePair<String, String>(key, value);
-                m_attributeList.Add(newSection);
-                newSection.Value.Add(newAttribute);
+                StringDictionary newSection = new StringDictionary();
+                m_attributeList.Add(sectionName, newSection);
+                newSection.Add(key, value);
                 m_dirty = true;
             }
             return true;
