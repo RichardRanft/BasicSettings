@@ -112,11 +112,9 @@ namespace BasicSettings
 
                         if (line.StartsWith("["))
                         {
-                            bool sectionExists = false;
                             // check to see if this [Section] exists.  If so, add new entries to it
                             if (m_attributeList.ContainsKey(line.ToString().Trim()))
                             {
-                                sectionExists = true;
                                 continue;
                             }
                             // otherwise, create a new [Section]
@@ -176,11 +174,11 @@ namespace BasicSettings
                             Console.WriteLine("{0} : Exception : {1}", DateTime.Now.ToString(), e.Message);
                             return false;
                         }
-                        foreach (String attribute in m_attributeList[section])
+                        foreach (String attribute in m_attributeList[section].Keys)
                         {
                             try
                             {
-                                writer.WriteLine(m_attributeList[section][attribute].ToUpper() + "=" + m_attributeList[section][attribute]);
+                                writer.WriteLine(attribute.ToUpper() + "=" + m_attributeList[section][attribute]);
                             }
                             catch (Exception e)
                             {
