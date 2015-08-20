@@ -164,10 +164,9 @@ namespace BasicSettings
                 {
                     foreach (String section in m_attributeList.Keys)
                     {
-                        String sectionTitle = section;
                         try
                         {
-                            writer.WriteLine(sectionTitle);
+                            writer.WriteLine(section);
                         }
                         catch (Exception e)
                         {
@@ -178,7 +177,7 @@ namespace BasicSettings
                         {
                             try
                             {
-                                writer.WriteLine(attribute.ToUpper() + "=" + m_attributeList[section][attribute]);
+                                writer.WriteLine(attribute.ToUpper() + "=" + m_attributeList[section][attribute].ToString());
                             }
                             catch (Exception e)
                             {
