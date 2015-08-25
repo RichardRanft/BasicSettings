@@ -189,6 +189,7 @@ bool CSettings::Set(std::string sectionName, std::string key, std::string value)
 
 void CSettings::readFile()
 {
+	m_iniText.clear();
 	std::ifstream file(m_fileName);
 	try
 	{
