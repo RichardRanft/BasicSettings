@@ -194,6 +194,7 @@ namespace BasicSettings
 
         public bool Set(String sectionName, String key, String value)
         {
+            bool success = false;
             if (sectionName.Equals(""))
                 sectionName = "[Default]";
 
@@ -204,16 +205,51 @@ namespace BasicSettings
                     m_attributeList[sectionName].Remove(key);
                     m_attributeList[sectionName].Add(key, value);
                     m_dirty = true;
+                    success = true;
                 }
             }
-            if (!m_dirty)
+            else
             {
                 StringDictionary newSection = new StringDictionary();
                 m_attributeList.Add(sectionName, newSection);
                 newSection.Add(key, value);
                 m_dirty = true;
+                success = true;
             }
-            return true;
+            return success;
+        }
+
+        public bool Add(String sectionName, String key, String value)
+        {
+            bool success = false;
+            if (sectionName.Equals(""))
+                sectionName = "[Default]";
+
+            if (m_attributeList.ContainsKey(sectionName))
+            {
+                if (m_attributeList[sectionName].ContainsKey(key))
+                {
+                    m_attributeList[sectionName].Remove(key);
+                    m_attributeList[sectionName].Add(key, value);
+                    success = true;
+                    m_dirty = true;
+                }
+                else
+                {
+                    m_attributeList[sectionName].Add(key, value);
+                    success = true;
+                    m_dirty = true;
+                }
+            }
+            else
+            {
+                StringDictionary newSection = new StringDictionary();
+                m_attributeList.Add(sectionName, newSection);
+                newSection.Add(key, value);
+                success = true;
+                m_dirty = true;
+            }
+            return success;
         }
     }
 }
